@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const { WebClient } = require('@slack/web-api');
-const { buildSlackAttachments, formatChannelName } = require('./src/utils');
+const { buildSlackAttachments, buildSlackBlocks, formatChannelName } = require('./src/utils');
 
 (async () => {
   try {
@@ -18,6 +18,7 @@ const { buildSlackAttachments, formatChannelName } = require('./src/utils');
     }
 
     const attachments = buildSlackAttachments({ status, color, github });
+    const blocks = buildSlackBlocks({ github });
     const channelId = core.getInput('channel_id') || (await lookUpChannelId({ slack, channel }));
 
     if (!channelId) {
@@ -30,6 +31,7 @@ const { buildSlackAttachments, formatChannelName } = require('./src/utils');
     const args = {
       channel: channelId,
       attachments,
+      blocks,
     };
 
     if (messageId) {

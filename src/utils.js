@@ -51,6 +51,26 @@ function buildSlackAttachments({ status, color, github }) {
 
 module.exports.buildSlackAttachments = buildSlackAttachments;
 
+function buildSlackBlocks({ github }) {
+  const { payload, eventName } = github.context;
+  const event = eventName;
+  const blocks = [];
+
+  if (event === 'pull_request') {
+    blocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: payload.pull_request.body,
+      },
+    });
+  }
+
+  return blocks;
+}
+
+module.exports.buildSlackBlocks = buildSlackBlocks;
+
 function formatChannelName(channel) {
   return channel.replace(/[#@]/g, '');
 }
