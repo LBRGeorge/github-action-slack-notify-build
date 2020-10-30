@@ -57,6 +57,9 @@ function buildSlackBlocks({ github }) {
   const blocks = [];
 
   if (event === 'pull_request') {
+    console.log('debugging');
+    console.log(payload.pull_request.body);
+
     blocks.push({
       type: 'section',
       text: {
