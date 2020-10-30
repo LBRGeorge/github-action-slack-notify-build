@@ -1449,7 +1449,6 @@ const { buildSlackAttachments, buildSlackBlocks, formatChannelName } = __webpack
     }
 
     const attachments = buildSlackAttachments({ status, color, github });
-    const blocks = buildSlackBlocks({ github });
     const channelId = core.getInput('channel_id') || (await lookUpChannelId({ slack, channel }));
 
     if (!channelId) {
@@ -1461,8 +1460,7 @@ const { buildSlackAttachments, buildSlackBlocks, formatChannelName } = __webpack
 
     const args = {
       channel: channelId,
-      attachments,
-      blocks,
+      attachments
     };
 
     if (messageId) {
@@ -10075,22 +10073,12 @@ function buildSlackAttachments({ status, color, github }) {
 
   const sha = event === 'pull_request' ? payload.pull_request.head.sha : github.context.sha;
 
-  const referenceLink =
-    event === 'pull_request'
-      ? {
-          title: 'Pull Request',
-          value: `<${payload.pull_request.html_url} | ${payload.pull_request.title}>`,
-          short: true,
-        }
-      : {
-          title: 'Branch',
-          value: `<https://github.com/${owner}/${repo}/commit/${sha} | ${branch}>`,
-          short: true,
-        };
-
   return [
     {
       color,
+      mrkdwn_in: ['text'],
+      title: event === 'pull_request' ? `<${payload.pull_request.html_url} | ${payload.pull_request.title}>` : `<https://github.com/${owner}/${repo}/commit/${sha} | ${branch}>`,
+      text: event === 'pull_request' ? payload.pull_request.body : '',
       fields: [
         {
           title: 'Action',
@@ -10101,13 +10089,7 @@ function buildSlackAttachments({ status, color, github }) {
           title: 'Status',
           value: status,
           short: true,
-        },
-        referenceLink,
-        {
-          title: 'Event',
-          value: event,
-          short: true,
-        },
+        }
       ],
       footer_icon: 'https://github.githubassets.com/favicon.ico',
       footer: `<https://github.com/${owner}/${repo} | ${owner}/${repo}>`,
@@ -10117,29 +10099,6 @@ function buildSlackAttachments({ status, color, github }) {
 }
 
 module.exports.buildSlackAttachments = buildSlackAttachments;
-
-function buildSlackBlocks({ github }) {
-  const { payload, eventName } = github.context;
-  const event = eventName;
-  const blocks = [];
-
-  if (event === 'pull_request') {
-    console.log('debugging');
-    console.log(payload.pull_request.body);
-
-    blocks.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: payload.pull_request.body,
-      },
-    });
-  }
-
-  return blocks;
-}
-
-module.exports.buildSlackBlocks = buildSlackBlocks;
 
 function formatChannelName(channel) {
   return channel.replace(/[#@]/g, '');
